@@ -7,8 +7,6 @@
 #include <string.h>
 #include <pthread.h>
 
-#define PORT 8080
-
 void sendHeaderData(int socket, int code)
 {
     char header[1024];
@@ -53,12 +51,32 @@ void *handleConnection(void *socket)
     pthread_exit(NULL);
 }
 
+int printUsage(){
+    printf("Run the following way:\n");
+    printf("\t./server.out <ipAdress> <port>\n");
+}
+
 int main(int argc, char const *argv[])
 {
     int server_fd;
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
+
+
+    //start by reading arguments from the command line
+    if(argc != 3){
+        printf("Not enough Arguments specifed");
+        printUsage();
+        exit(1);
+    }
+
+    printf("Running Server at: %s:%s\n",argv[1],argv[2]);   
+
+    const char* ipAdress = argv[1];
+
+    int port = atoi(argv[2]);
+
 
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -75,10 +93,10 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
     address.sin_family = AF_INET;
-    inet_pton(AF_INET, "0.0.0.0", &address.sin_addr);
-    address.sin_port = htons(PORT);
+    inet_pton(AF_INET, ipAdress, &address.sin_addr);
+    address.sin_port = htons(port);
 
-    // Forcefully attaching socket to the port 8080
+    // Forcefully attaching socket to the port <port>
     if (bind(server_fd, (struct sockaddr *)&address,
              sizeof(address)) < 0)
     {
